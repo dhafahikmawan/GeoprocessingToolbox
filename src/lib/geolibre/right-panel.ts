@@ -165,8 +165,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       const file = fileInputA.files?.[0];
       if(file){
         try{
-          const text = await file.text();
-          const parsed = JSON.parse(text) as GeoJSON.FeatureCollection;
+          const parsed = await convertToGeoJson(file);
           const unit = (bufferUnitSelect.value || "kilometers") as BufferUnits;
           const bufferResult = createBufferVector(parsed, Number(bufferRadius.value), unit);
           _app.addGeoJsonLayer("Buffered Layer", bufferResult!);
