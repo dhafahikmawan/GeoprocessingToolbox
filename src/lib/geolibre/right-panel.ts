@@ -5,6 +5,7 @@ import { FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon }
 import { createDissolveVector } from "../geoprocessing/dissolve";
 import { createIntersectVector } from "../geoprocessing/intersect";
 import { createEraseVector } from "../geoprocessing/erase";
+import { createClipVector } from "../geoprocessing/clip";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -33,6 +34,15 @@ export const RIGHT_PANEL_ID = "geolibre-plugin-template-workbench";
  */
 
 let _app : GeoLibreAppAPI;
+
+function getPolygons(input : FeatureCollection<Geometry, GeoJsonProperties>){
+  const polygonFeatures = input.features.filter(feature => {
+    if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
+    const geomType = feature.geometry.type;
+    return (geomType === "Polygon") || (geomType === "MultiPolygon");
+  });
+  return polygonFeatures;
+}
 
 function getAllPropertyNames(geojsonData : FeatureCollection<Geometry, GeoJsonProperties>) : string[] {
   if(!geojsonData || geojsonData.type !== "FeatureCollection"){
@@ -153,12 +163,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
           console.log("Parsed:");
           console.log(parsed);
           console.log(parsed.features);
-          const polygonFeatures = parsed.features.filter(feature => {
-            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-            const geomType = feature.geometry.type;
-            return (geomType === "Polygon") || (geomType === "MultiPolygon");
-          });
-          parsed.features = polygonFeatures;
+          parsed.features = getPolygons(parsed);
           console.log("PolygonFeatures")
           const properties = getAllPropertyNames(parsed);
           console.log("Properties: ");
@@ -176,12 +181,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       if(file){
         const text = await file.text();
         let parsed = JSON.parse(text) as GeoJSON.FeatureCollection;
-        const polygonFeatures = parsed.features.filter(feature => {
-          if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-          const geomType = feature.geometry.type;
-          return (geomType === "Polygon") || (geomType === "MultiPolygon");
-        });
-        parsed.features = polygonFeatures;
+        parsed.features = getPolygons(parsed);
         const dissolveResult = createDissolveVector(parsed, attrSelect.value);
         _app.addGeoJsonLayer("Dissolved Layer", dissolveResult!);
       }
@@ -215,18 +215,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
           let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
           const textOverlay = await fileOverlay.text();
           let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
-          const polygonFeaturesInput = parsedInput.features.filter(feature => {
-            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-            const geomType = feature.geometry.type;
-            return (geomType === "Polygon") || (geomType === "MultiPolygon");
-          });
-          const polygonFeaturesOverlay = parsedOverlay.features.filter(feature => {
-            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-            const geomType = feature.geometry.type;
-            return (geomType === "Polygon") || (geomType === "MultiPolygon");
-          });
-          parsedInput.features = polygonFeaturesInput;
-          parsedOverlay.features = polygonFeaturesOverlay; 
+          parsedInput.features = getPolygons(parsedInput);
+          parsedOverlay.features = getPolygons(parsedOverlay); 
 
           const intersectVector = createIntersectVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
           _app.addGeoJsonLayer("Intersected Layer", intersectVector!);
@@ -251,6 +241,14 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
+          const textInput = await fileInput.text();
+          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
+          const textOverlay = await fileOverlay.text();
+          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          parsedInput.features = getPolygons(parsedInput);
+          parsedOverlay.features = getPolygons(parsedOverlay);
+          const clippedVector = createClipVector(parsedInput as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
+          _app.addGeoJsonLayer("Clipped Layer", clippedVector);
         }
       })
     }
@@ -268,18 +266,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
           let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
           const textOverlay = await fileOverlay.text();
           let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
-          const polygonFeaturesInput = parsedInput.features.filter(feature => {
-            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-            const geomType = feature.geometry.type;
-            return (geomType === "Polygon") || (geomType === "MultiPolygon");
-          });
-          const polygonFeaturesOverlay = parsedOverlay.features.filter(feature => {
-            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
-            const geomType = feature.geometry.type;
-            return (geomType === "Polygon") || (geomType === "MultiPolygon");
-          });
-          parsedInput.features = polygonFeaturesInput;
-          parsedOverlay.features = polygonFeaturesOverlay; 
+          parsedInput.features = getPolygons(parsedInput);
+          parsedOverlay.features = getPolygons(parsedOverlay); 
           const erasedVector = createEraseVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
           _app.addGeoJsonLayer("Erased Layer", erasedVector);
         }

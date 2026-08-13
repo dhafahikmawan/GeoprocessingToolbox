@@ -42,7 +42,4 @@ export function createIntersectVector(input : FeatureCollection<Polygon|MultiPol
         console.log("Intersection Error: ", err);
     }
     return turf.featureCollection(results);
-    
-
-
 }
