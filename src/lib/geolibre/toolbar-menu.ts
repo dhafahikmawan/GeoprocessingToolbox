@@ -31,7 +31,7 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
 
   return app.registerToolbarMenu({
     id: TOOLBAR_MENU_ID,
-    label: "Template",
+    label: "Geoprocessing Toolbox",
     items: [
       {
         id: "open-right",
