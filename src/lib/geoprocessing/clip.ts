@@ -1,3 +1,5 @@
 import * as turf from '@turf/turf';
-import type { FeatureCollection, GeoJsonProperties, Polygon, MultiPolygon } from 'geojson';
+import type { Feature, FeatureCollection, GeoJsonProperties, Polygon, MultiPolygon } from 'geojson';
+
+
 

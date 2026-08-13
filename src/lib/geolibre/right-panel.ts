@@ -4,8 +4,7 @@ import { createBufferVector } from "../geoprocessing/buffer";
 import { FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon } from "geojson";
 import { createDissolveVector } from "../geoprocessing/dissolve";
 import { createIntersectVector } from "../geoprocessing/intersect";
-import { featureCollection } from "@turf/turf";
-
+import { createEraseVector } from "../geoprocessing/erase";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -206,7 +205,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       const intersectButton = document.createElement("button");
       intersectButton.type = "button";
       intersectButton.className = "geoprocessing-action-button";
-      intersectButton.textContent = "Dissolve";
+      intersectButton.textContent = "Intersect";
       wrapper.appendChild(intersectButton);
       intersectButton.addEventListener('click', async() => {
         const fileInput = fileInputA.files?.[0];
@@ -243,10 +242,48 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
 
     }
     else if(method === "Clip"){
-
+      const clipButton = document.createElement("button");
+      clipButton.type = "button";
+      clipButton.className = "geoprocessing-action-button";
+      clipButton.textContent = "Clip"
+      wrapper.appendChild(clipButton);
+      clipButton.addEventListener('click', async() => {
+        const fileInput = fileInputA.files?.[0];
+        const fileOverlay = fileInputB.files?.[0];
+        if(fileInput && fileOverlay){
+        }
+      })
     }
     else if(method === "Erase"){
-
+      const eraseButton = document.createElement("button");
+      eraseButton.type = "button";
+      eraseButton.className = "geoprocessing-action-button";
+      eraseButton.textContent = "Erase";
+      wrapper.appendChild(eraseButton);
+      eraseButton.addEventListener('click', async() => {
+        const fileInput = fileInputA.files?.[0];
+        const fileOverlay = fileInputB.files?.[0];
+        if(fileInput && fileOverlay){
+          const textInput = await fileInput.text();
+          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
+          const textOverlay = await fileOverlay.text();
+          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          const polygonFeaturesInput = parsedInput.features.filter(feature => {
+            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
+            const geomType = feature.geometry.type;
+            return (geomType === "Polygon") || (geomType === "MultiPolygon");
+          });
+          const polygonFeaturesOverlay = parsedOverlay.features.filter(feature => {
+            if(!feature || feature.type !== "Feature" || !feature.geometry) return false;
+            const geomType = feature.geometry.type;
+            return (geomType === "Polygon") || (geomType === "MultiPolygon");
+          });
+          parsedInput.features = polygonFeaturesInput;
+          parsedOverlay.features = polygonFeaturesOverlay; 
+          const erasedVector = createEraseVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
+          _app.addGeoJsonLayer("Erased Layer", erasedVector);
+        }
+      })
     }
     else return;
   }

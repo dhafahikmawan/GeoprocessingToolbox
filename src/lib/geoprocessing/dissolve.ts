@@ -7,6 +7,14 @@ export function createDissolveVector(parsed : FeatureCollection<Geometry, GeoJso
         throw new Error('Input layer must contain at least one feature.');
     }
     const flattened = turf.flatten(parsed);
-    const turfDissolveResult = turf.dissolve(flattened as FeatureCollection<Polygon, GeoJsonProperties>, { propertyName : attribute});
-    return turfDissolveResult;
+    if(attribute){
+        const turfDissolveResult = turf.dissolve(flattened as FeatureCollection<Polygon, GeoJsonProperties>, { propertyName : attribute});
+        return turfDissolveResult;
+
+    }
+    else{
+        const turfDissolveResult = turf.dissolve(flattened as FeatureCollection<Polygon, GeoJsonProperties>);
+        return turfDissolveResult;
+
+    }
 }
