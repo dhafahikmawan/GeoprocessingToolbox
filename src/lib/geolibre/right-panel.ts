@@ -8,6 +8,8 @@ import { createEraseVector } from "../geoprocessing/erase";
 import { createClipVector } from "../geoprocessing/clip";
 import { createUnionVector } from "../geoprocessing/union";
 import { createSpatialJoinVector } from "../geoprocessing/spatial-join";
+import shp from "shpjs";
+import { kml, gpx } from "@tmcw/togeojson";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -36,6 +38,43 @@ export const RIGHT_PANEL_ID = "geolibre-plugin-template-workbench";
  */
 
 let _app : GeoLibreAppAPI;
+
+export async function convertToGeoJson(file: File): Promise<FeatureCollection> {
+  const fileName = file.name.toLowerCase();
+
+  // 1. Handle Shapefile (.zip)
+  if (fileName.endsWith(".zip")) {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await shp(arrayBuffer);
+    
+    // shpjs can return an array of FeatureCollections if multiple shapefiles are zipped.
+    // We assume a single shapefile or merge them into a single FeatureCollection.
+    if (Array.isArray(result)) {
+      return {
+        type: "FeatureCollection",
+        features: result.flatMap(fc => fc.features)
+      };
+    }
+    return result as FeatureCollection;
+  }
+
+  // 2. Handle KML or GPX
+  if (fileName.endsWith(".kml") || fileName.endsWith(".gpx")) {
+    const text = await file.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, "text/xml");
+    
+    if (fileName.endsWith(".kml")) {
+      return kml(xml) as FeatureCollection;
+    } else {
+      return gpx(xml) as FeatureCollection;
+    }
+  }
+
+  // 3. Default to GeoJSON/JSON
+  const text = await file.text();
+  return JSON.parse(text) as FeatureCollection;
+}
 
 function getPolygons(input : FeatureCollection<Geometry, GeoJsonProperties>){
   const polygonFeatures = input.features.filter(feature => {
@@ -104,7 +143,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
 
   const fileInputA = document.createElement("input");
   fileInputA.type = "file";
-  fileInputA.accept = ".geojson,application/json";
+  fileInputA.accept = ".geojson,application/json,.zip,.kml,.gpx";
   fileInputA.className ="geoprocessing-file-input"; 
   wrapper.appendChild(fileInputA);
   //Buffer Form
@@ -160,8 +199,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       const file = fileInputA.files?.[0];
       if(file){
         try{
-          const text = await file.text();
-          let parsed = JSON.parse(text) as GeoJSON.FeatureCollection;
+          let parsed = await convertToGeoJson(file);
           console.log("Parsed:");
           console.log(parsed);
           console.log(parsed.features);
@@ -181,8 +219,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
     dissolveButton.addEventListener('click', async ()=>{
       const file = fileInputA.files?.[0];
       if(file){
-        const text = await file.text();
-        let parsed = JSON.parse(text) as GeoJSON.FeatureCollection;
+        let parsed = await convertToGeoJson(file);
         parsed.features = getPolygons(parsed);
         const dissolveResult = createDissolveVector(parsed, attrSelect.value);
         _app.addGeoJsonLayer("Dissolved Layer", dissolveResult!);
@@ -200,7 +237,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
 
     const fileInputB = document.createElement("input");
     fileInputB.type = "file";
-    fileInputB.accept = ".geojson,application/json";
+    fileInputB.accept = ".geojson,application/json,.zip,.kml,.gpx";
     fileInputB.className ="geoprocessing-file-input"; 
     wrapper.appendChild(fileInputB);
     if(method === "Intersect"){
@@ -213,10 +250,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
-          const textInput = await fileInput.text();
-          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
-          const textOverlay = await fileOverlay.text();
-          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          let parsedInput = await convertToGeoJson(fileInput);
+          let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
           parsedOverlay.features = getPolygons(parsedOverlay); 
 
@@ -237,10 +272,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
-          const textInput = await fileInput.text();
-          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
-          const textOverlay = await fileOverlay.text();
-          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          let parsedInput = await convertToGeoJson(fileInput);
+          let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
           parsedOverlay.features = getPolygons(parsedOverlay);
           const unionizedVector = createUnionVector(parsedInput as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
@@ -272,10 +305,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
-          const textInput = await fileInput.text();
-          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
-          const textOverlay = await fileOverlay.text();
-          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          let parsedInput = await convertToGeoJson(fileInput);
+          let parsedOverlay = await convertToGeoJson(fileOverlay);
           const sJoinVector = createSpatialJoinVector(parsedInput, parsedOverlay, sJoinRelSelect.value, sJoinMethodSelect.value);
           if(sJoinVector){
             _app.addGeoJsonLayer("Spatially Joined Vector", sJoinVector);
@@ -293,10 +324,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
-          const textInput = await fileInput.text();
-          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
-          const textOverlay = await fileOverlay.text();
-          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          let parsedInput = await convertToGeoJson(fileInput);
+          let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
           parsedOverlay.features = getPolygons(parsedOverlay);
           const clippedVector = createClipVector(parsedInput as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
@@ -314,10 +343,8 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         const fileInput = fileInputA.files?.[0];
         const fileOverlay = fileInputB.files?.[0];
         if(fileInput && fileOverlay){
-          const textInput = await fileInput.text();
-          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
-          const textOverlay = await fileOverlay.text();
-          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          let parsedInput = await convertToGeoJson(fileInput);
+          let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
           parsedOverlay.features = getPolygons(parsedOverlay); 
           const erasedVector = createEraseVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
