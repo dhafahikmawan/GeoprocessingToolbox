@@ -6,6 +6,7 @@ import { createDissolveVector } from "../geoprocessing/dissolve";
 import { createIntersectVector } from "../geoprocessing/intersect";
 import { createEraseVector } from "../geoprocessing/erase";
 import { createClipVector } from "../geoprocessing/clip";
+import { createUnionVector } from "../geoprocessing/union";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -226,7 +227,25 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       })
     }
     else if(method === "Union"){
-
+      const unionButton = document.createElement("button");
+      unionButton.type = "button";
+      unionButton.className = "geoprocessing-action-button";
+      unionButton.textContent = "Clip"
+      wrapper.appendChild(unionButton);
+      unionButton.addEventListener('click', async() =>{
+        const fileInput = fileInputA.files?.[0];
+        const fileOverlay = fileInputB.files?.[0];
+        if(fileInput && fileOverlay){
+          const textInput = await fileInput.text();
+          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
+          const textOverlay = await fileOverlay.text();
+          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          parsedInput.features = getPolygons(parsedInput);
+          parsedOverlay.features = getPolygons(parsedOverlay);
+          const unionizedVector = createUnionVector(parsedInput as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
+          _app.addGeoJsonLayer("Unionized Layer", unionizedVector);
+        }
+      });
     }
     else if(method === "Spatial Join"){
 
