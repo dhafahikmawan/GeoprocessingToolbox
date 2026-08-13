@@ -7,6 +7,7 @@ import { createIntersectVector } from "../geoprocessing/intersect";
 import { createEraseVector } from "../geoprocessing/erase";
 import { createClipVector } from "../geoprocessing/clip";
 import { createUnionVector } from "../geoprocessing/union";
+import { createSpatialJoinVector } from "../geoprocessing/spatial-join";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -230,7 +231,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       const unionButton = document.createElement("button");
       unionButton.type = "button";
       unionButton.className = "geoprocessing-action-button";
-      unionButton.textContent = "Clip"
+      unionButton.textContent = "Union"
       wrapper.appendChild(unionButton);
       unionButton.addEventListener('click', async() =>{
         const fileInput = fileInputA.files?.[0];
@@ -248,7 +249,39 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
       });
     }
     else if(method === "Spatial Join"){
-
+      const sJoinRelLabel = document.createElement("h1");
+      sJoinRelLabel.textContent = "Spatial Realtionship:";
+      const sJoinRelSelect = document.createElement("select");
+      sJoinRelSelect.className = "geoprocessing-sjoin-rel-select";
+      sJoinRelSelect.innerHTML = '<option value="intersects">Intersects</option><option value="within">Within</option><option value="contains">Contains</option><option value="nearest">Nearest</option>';
+      const sJoinMethodLabel = document.createElement("h1");
+      sJoinMethodLabel.textContent = "Join Type:"
+      const sJoinMethodSelect = document.createElement("select");
+      sJoinMethodSelect.className = "geoprocessing-sjoin-method-select";
+      sJoinMethodSelect.innerHTML = '<option value="inner">Inner</option><option value="left">Left</option>';
+      const spJoinButton = document.createElement("button");
+      spJoinButton.type = "button";
+      spJoinButton.className = "geoprocessing-action-button";
+      spJoinButton.textContent = "Spatial Join";
+      wrapper.appendChild(sJoinRelLabel);
+      wrapper.appendChild(sJoinRelSelect);
+      wrapper.appendChild(sJoinMethodLabel);
+      wrapper.appendChild(sJoinMethodSelect);
+      wrapper.appendChild(spJoinButton);
+      spJoinButton.addEventListener('click', async () => {
+        const fileInput = fileInputA.files?.[0];
+        const fileOverlay = fileInputB.files?.[0];
+        if(fileInput && fileOverlay){
+          const textInput = await fileInput.text();
+          let parsedInput = JSON.parse(textInput) as GeoJSON.FeatureCollection;
+          const textOverlay = await fileOverlay.text();
+          let parsedOverlay = JSON.parse(textOverlay) as GeoJSON.FeatureCollection;
+          const sJoinVector = createSpatialJoinVector(parsedInput, parsedOverlay, sJoinRelSelect.value, sJoinMethodSelect.value);
+          if(sJoinVector){
+            _app.addGeoJsonLayer("Spatially Joined Vector", sJoinVector);
+          }
+        }
+      });
     }
     else if(method === "Clip"){
       const clipButton = document.createElement("button");
