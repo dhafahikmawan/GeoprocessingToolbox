@@ -353,8 +353,6 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
     }
     else return;
   }
-  //Intersect Form
-  
 }
 
 function drawGeoprocessingMethodOption(method : string){
@@ -394,7 +392,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       const wrap = document.createElement("div");
       wrap.className = "geolibre-plugin-right-panel";
 
-      //Desciprion
+      //Description
       const heading = document.createElement("h2");
       heading.textContent = "Plugin Workbench";
 
