@@ -1,6 +1,6 @@
 import { FLOATING_PANEL_ID } from "./floating-panel";
-import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import { RIGHT_PANEL_ID, setMethod } from "./right-panel";
+import type { GeoLibreAppAPI, GeoLibreControl, GeoLibreToolbarMenu, GeoLibreToolbarMenuItem } from "./host-api";
+import { RIGHT_PANEL_ID, setMethod, BASE_METHODS } from "./right-panel";
 
 /**
  * Demonstration of the GeoLibre top toolbar menu host API.
@@ -28,7 +28,18 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
   app: GeoLibreAppAPI<TControl>,
 ): (() => void) | null {
   if (!app.registerToolbarMenu) return null;
-
+  const methods :GeoLibreToolbarMenuItem[] = [];
+  for(let i=1; i<BASE_METHODS.length; i++){
+    methods.push({
+      id: BASE_METHODS[i],
+      label: BASE_METHODS[i],
+      disabled: !app.openRightPanel,
+      onSelect: ()=>{
+        app.openRightPanel?.(RIGHT_PANEL_ID);
+        setMethod(BASE_METHODS[i]);
+      },
+    });
+  }
   return app.registerToolbarMenu({
     id: TOOLBAR_MENU_ID,
     label: "Geoprocessing Toolbox",
@@ -45,71 +56,7 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
         type: "submenu",
         id: "tools",
         label: "Tools",
-        items: [
-          {
-            id: "buffer",
-            label: "Buffer",
-            disabled: !app.openRightPanel?.(RIGHT_PANEL_ID),
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Buffer");
-            },
-          },
-          {
-            id: "intersect",
-            label: "Intersect",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Intersect");
-            },
-          },
-          {
-            id: "union",
-            label: "Union",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Union");
-            },
-          },
-          {
-            id: "spatial-join",
-            label: "Spatial Join",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Spatial Join");
-            },
-          },
-          {
-            id: "clip",
-            label: "Clip",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Clip");
-            },
-          },
-          {
-            id: "erase",
-            label: "Erase",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Erase");
-            },
-          },
-          {
-            id: "dissolve",
-            label: "Dissolve",
-            disabled: !app.openFloatingPanel,
-            onSelect: () => {
-              app.openRightPanel?.(RIGHT_PANEL_ID);
-              setMethod("Dissolve");
-            },
-          },
-        ],
+        items: methods,
       },
       { type: "separator" },
       {

@@ -29,6 +29,27 @@ import { kml, gpx } from "@tmcw/togeojson";
 /** Stable id for this plugin's right panel. Replace with your own. */
 export const RIGHT_PANEL_ID = "geolibre-plugin-template-workbench";
 
+export const BASE_METHODS = [
+  "",
+  "Buffer",
+  "Intersect",
+  "Union",
+  "Spatial Join",
+  "Clip",
+  "Erase",
+  "Dissolve",
+];
+export const BASE_METHODS_TC = [
+  "Select Geoprocessing Function",
+  "Buffer",
+  "Intersect",
+  "Union",
+  "Spatial Join",
+  "Clip",
+  "Erase",
+  "Dissolve",
+];
+
 /**
  * Register and open the template's right-sidebar panel.
  *
@@ -364,22 +385,14 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
   }
 }
 
-function drawGeoprocessingMethodOption(method : string){
-  const methodOption = document.createElement("option");
-  methodOption.className = "geoprocessing-method-option";
-  methodOption.value = method;
-  methodOption.textContent = method;
-  return methodOption;
-}
-
-function drawGeoprocessingMethods(dropdown : HTMLElement){
-  dropdown.appendChild(drawGeoprocessingMethodOption("Buffer"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Intersect"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Union"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Spatial Join"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Clip"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Erase"));
-  dropdown.appendChild(drawGeoprocessingMethodOption("Dissolve"));
+function drawGeoprocessingMethods(dropdown : HTMLElement, methods: string[], tcs: string[]){
+  for(let i =0; i< methods.length; i++){
+    const option = document.createElement("option");
+    option.className = "geoprocessing-method-option";
+    option.value = methods[i];
+    option.textContent = i<tcs.length?tcs[i]:methods[i];
+    dropdown.appendChild(option);
+  }
 }
 
 
@@ -413,7 +426,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       methodPlaceholder.textContent = "Select Geoprocessing function";
       methodPlaceholder.className = "geoprocessing-method-option";
       method.appendChild(methodPlaceholder);
-      drawGeoprocessingMethods(method);
+      drawGeoprocessingMethods(method, BASE_METHODS, BASE_METHODS_TC);
       _method = method;
 
       //Method Form Container
