@@ -38,6 +38,15 @@ export const RIGHT_PANEL_ID = "geolibre-plugin-template-workbench";
  */
 
 let _app : GeoLibreAppAPI;
+let _method : HTMLSelectElement;
+let _methodForm : HTMLElement;
+
+export function setMethod(process : string){
+  if(_method && _methodForm){
+    _method.value = process;
+    loadMethodForm(_methodForm, process);
+  }
+}
 
 export async function convertToGeoJson(file: File): Promise<FeatureCollection> {
   const fileName = file.name.toLowerCase();
@@ -376,7 +385,7 @@ function drawGeoprocessingMethods(dropdown : HTMLElement){
 
 
 export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
-  app: GeoLibreAppAPI<TControl>,
+  app: GeoLibreAppAPI<TControl>
 ): (() => void) | null {
   _app = app as GeoLibreAppAPI;
   // Right panels are an optional host capability; degrade gracefully when the
@@ -405,11 +414,12 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       methodPlaceholder.className = "geoprocessing-method-option";
       method.appendChild(methodPlaceholder);
       drawGeoprocessingMethods(method);
+      _method = method;
 
       //Method Form Container
       const methodFormContainer = document.createElement("div");
       methodFormContainer.className = "geoprocessing-method-form-container";
-
+      _methodForm = methodFormContainer;
       const body = document.createElement("p");
       body.textContent =
         "This panel is rendered by the plugin through app.registerRightPanel(). " +
@@ -423,7 +433,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
       //Event: Method selected
       method.addEventListener("change", () => {
         loadMethodForm(methodFormContainer, method.value);
-      })
+      });
 
       // Optional cleanup, run when the panel closes or is unregistered.
       return () => {
@@ -435,7 +445,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
   // Open it right away so the example is visible on activation. Remove this call
   // (or gate it behind a button in your control) if you would rather open the
   // panel on demand instead of every time the plugin activates.
-  app.openRightPanel?.(RIGHT_PANEL_ID);
+  //app.openRightPanel?.(RIGHT_PANEL_ID);
 
   return () => {
     app.closeRightPanel?.(RIGHT_PANEL_ID);

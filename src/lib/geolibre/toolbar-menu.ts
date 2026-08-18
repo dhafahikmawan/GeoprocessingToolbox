@@ -1,6 +1,6 @@
 import { FLOATING_PANEL_ID } from "./floating-panel";
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import { RIGHT_PANEL_ID } from "./right-panel";
+import { RIGHT_PANEL_ID, setMethod } from "./right-panel";
 
 /**
  * Demonstration of the GeoLibre top toolbar menu host API.
@@ -47,10 +47,67 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
         label: "Tools",
         items: [
           {
-            id: "open-floating",
-            label: "Open floating tools",
+            id: "buffer",
+            label: "Buffer",
+            disabled: !app.openRightPanel?.(RIGHT_PANEL_ID),
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Buffer");
+            },
+          },
+          {
+            id: "intersect",
+            label: "Intersect",
             disabled: !app.openFloatingPanel,
-            onSelect: () => app.openFloatingPanel?.(FLOATING_PANEL_ID),
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Intersect");
+            },
+          },
+          {
+            id: "union",
+            label: "Union",
+            disabled: !app.openFloatingPanel,
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Union");
+            },
+          },
+          {
+            id: "spatial-join",
+            label: "Spatial Join",
+            disabled: !app.openFloatingPanel,
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Spatial Join");
+            },
+          },
+          {
+            id: "clip",
+            label: "Clip",
+            disabled: !app.openFloatingPanel,
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Clip");
+            },
+          },
+          {
+            id: "erase",
+            label: "Erase",
+            disabled: !app.openFloatingPanel,
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Erase");
+            },
+          },
+          {
+            id: "dissolve",
+            label: "Dissolve",
+            disabled: !app.openFloatingPanel,
+            onSelect: () => {
+              app.openRightPanel?.(RIGHT_PANEL_ID);
+              setMethod("Dissolve");
+            },
           },
         ],
       },
