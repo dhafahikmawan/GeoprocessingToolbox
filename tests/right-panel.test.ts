@@ -50,7 +50,42 @@ describe("registerTemplateRightPanel", () => {
 
     const container = document.createElement("div");
     const cleanup = panel?.render(container);
-    expect(container.querySelector("h2")?.textContent).toBe("Plugin Workbench");
+    expect(container.querySelector("h2")?.textContent).toBe(
+      "Spatio Geoprocessing Workbench",
+    );
+    expect(container.querySelector(".spatio-geoprocessing-right-panel"))
+      .toBeTruthy();
+
+    const method = container.querySelector<HTMLSelectElement>(
+      ".geoprocessing-base-select",
+    );
+    expect(method?.style.border).toBeTruthy();
+    expect(method?.options[0].style.backgroundColor).toMatch(
+      /white|rgb\(255, 255, 255\)/,
+    );
+    expect(method?.options[0].style.color).toMatch(
+      /black|rgb\(0, 0, 0\)/,
+    );
+
+    method!.value = "Buffer";
+    method!.dispatchEvent(new Event("change"));
+
+    const form = container.querySelector(".geoprocessing-base-form-container")!;
+    expect(form.querySelectorAll("input")).toHaveLength(2);
+    expect(form.querySelector("input[type=number]")?.style.border).toBeTruthy();
+    expect(form.querySelector("input[type=file]")?.style.border).toBeTruthy();
+    expect(form.querySelector("select")?.style.border).toBeTruthy();
+    expect(form.querySelector("button")?.style.border).toBeTruthy();
+
+    method!.value = "Dissolve";
+    method!.dispatchEvent(new Event("change"));
+    const dissolveOption = container.querySelector(
+      ".geoprocessing-dissolve-attribute-option",
+    ) as HTMLOptionElement;
+    expect(dissolveOption.style.backgroundColor).toMatch(
+      /white|rgb\(255, 255, 255\)/,
+    );
+    expect(dissolveOption.style.color).toMatch(/black|rgb\(0, 0, 0\)/);
 
     // The returned cleanup removes the plugin's own DOM.
     expect(cleanup).toBeTypeOf("function");
