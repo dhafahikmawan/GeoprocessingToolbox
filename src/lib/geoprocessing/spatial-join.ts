@@ -23,6 +23,7 @@ function checkRelation(relation : string, input : Feature<Geometry, GeoJsonPrope
     if(relation === "intersects") return turf.booleanIntersects(input, overlay);
     else if(relation === "within") return turf.booleanWithin(input, overlay);
     else if(relation === "contains") return turf.booleanContains(input,overlay);
+    else if(relation === "closest")
     else return false;
 }
 

@@ -28,7 +28,7 @@ import { applyRightPanelStyles } from "../styles/right-panel-styles";
  */
 
 /** Stable id for this plugin's right panel. Replace with your own. */
-export const RIGHT_PANEL_ID = "spatio-geoprocessing-toolbox";
+export const RIGHT_PANEL_ID = "spatio-geoprocessing-toolbox-panel";
 
 export const BASE_METHODS = [
   "",
