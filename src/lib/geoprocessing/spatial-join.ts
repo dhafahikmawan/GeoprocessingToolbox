@@ -23,7 +23,6 @@ function checkRelation(relation : string, input : Feature<Geometry, GeoJsonPrope
     if(relation === "intersects") return turf.booleanIntersects(input, overlay);
     else if(relation === "within") return turf.booleanWithin(input, overlay);
     else if(relation === "contains") return turf.booleanContains(input,overlay);
-    else if(relation === "closest")
     else return false;
 }
 
@@ -50,6 +49,41 @@ export function createSpatialJoinVector(input : FeatureCollection<Geometry, GeoJ
                 }
             })
             
+        }
+        else if(relation === "closest"){
+            // If overlay has no features, handle join type logic
+            if (overlay.features.length === 0) {
+                if (joinType === "left") {
+                    const newFeature = turf.feature(featureInput.geometry, { ...featureInput.properties });
+                    results.push(newFeature);
+                }
+                // For inner join, we do not push anything
+                return;
+            }
+
+            let minDistance = Infinity;
+            let closestOverlayFeature = overlay.features[0];
+
+            // Generate a representative point on the input feature to compute distances
+            const ptInput = turf.pointOnFeature(featureInput);
+
+            overlay.features.forEach(featureOverlay => {
+                // Generate a representative point on the overlay feature
+                const ptOverlay = turf.pointOnFeature(featureOverlay);
+                const distance = turf.distance(ptInput, ptOverlay);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestOverlayFeature = featureOverlay;
+                }
+            });
+
+            // Merge properties with the closest overlay feature using the 'Overlay' prefix
+            const newFeature = turf.feature(featureInput.geometry, {
+                ...featureInput.properties,
+                ...prefixProperties(closestOverlayFeature.properties, "Overlay"),
+            });
+            results.push(newFeature);
         }
         else{
             return null;

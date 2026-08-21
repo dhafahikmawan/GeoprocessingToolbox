@@ -356,7 +356,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
         document.createElement("select"),
         "geoprocessing-inner-select",
       );
-      sJoinRelSelect.innerHTML = '<option value="intersects">Intersects</option><option value="within">Within</option><option value="contains">Contains</option><option value="nearest">Nearest</option>';
+      sJoinRelSelect.innerHTML = '<option value="intersects">Intersects</option><option value="within">Within</option><option value="contains">Contains</option><option value="closest">Closest</option>';
       Array.from(sJoinRelSelect.options).forEach((option) => {
         applyRightPanelStyles(option, "geoprocessing-method-option");
       });
