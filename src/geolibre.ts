@@ -74,6 +74,8 @@ export const spatioGeoProcessingToolbox: GeoLibrePlugin<PluginControl> = {
   version: "0.1.0",
   urlParameterNames: [PLUGIN_DATA_PARAM],
   activate(app) {
+    console.log(app.listLayers?.());
+    //app.getLayerFeatures?.("Hello");
     control = control ?? createControl(app);
     const added = app.addMapControl(control, position);
     if (!added) {
