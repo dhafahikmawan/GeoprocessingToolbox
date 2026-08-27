@@ -3,7 +3,8 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Polygon, MultiPolyg
 
 
 function merge(input : FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>){
-    return turf.union(input);
+    if(input.features.length>1) return turf.union(input);
+    return input.features[0];
 }
 
 

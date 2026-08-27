@@ -172,6 +172,10 @@ function removeAllChildElements(parent:  HTMLElement){
 function loadMethodForm(wrapper: HTMLElement, method : string){
   //Clean Forms
   removeAllChildElements(wrapper);
+  //Layers
+  const layerDropdown = document.createElement("select");
+  drawLayerDropdown(layerDropdown);
+  wrapper.appendChild(layerDropdown);
   //Base Form
   const fileInputALabel = applyRightPanelStyles(
     document.createElement("h1"),
@@ -453,6 +457,24 @@ function drawGeoprocessingMethods(dropdown : HTMLElement, methods: string[], tcs
     option.textContent = i<tcs.length?tcs[i]:methods[i];
     dropdown.appendChild(option);
   }
+}
+
+function drawLayerDropdown(dropdown : HTMLElement){
+  const layers = _app.listLayers?.();
+  if(layers){
+    layers.forEach(layer => {
+      const option =  applyRightPanelStyles(
+        document.createElement("option"),
+        "geoprocessing-method-option",
+      );
+      option.value = layer.id;
+      option.textContent = layer.name;
+      dropdown.appendChild(option);
+      console.log("_______________", layer.name, "_______________________");
+      console.log(_app.getLayerFeatures?.(layer.id));
+    });
+  }
+  
 }
 
 
