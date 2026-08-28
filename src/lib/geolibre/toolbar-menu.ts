@@ -1,5 +1,5 @@
 import { FLOATING_PANEL_ID } from "./floating-panel";
-import type { GeoLibreAppAPI, GeoLibreControl, GeoLibreToolbarMenu, GeoLibreToolbarMenuItem } from "./host-api";
+import type { GeoLibreAppAPI, GeoLibreControl, GeoLibreToolbarMenuItem } from "./host-api";
 import { RIGHT_PANEL_ID, setMethod, BASE_METHODS } from "./right-panel";
 
 /**
