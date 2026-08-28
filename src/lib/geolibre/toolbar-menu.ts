@@ -46,7 +46,7 @@ export function registerTemplateToolbarMenu<TControl extends GeoLibreControl>(
     items: [
       {
         id: "open-right",
-        label: "Open workbench panel",
+        label: "Open Geoprocessing panel",
         // Disable the item on hosts that lack the capability, so it is not a
         // clickable no-op (demonstrates the `disabled` flag + capability check).
         disabled: !app.openRightPanel,

@@ -489,7 +489,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
 
   const unregister = app.registerRightPanel({
     id: RIGHT_PANEL_ID,
-    title: "Spatio Geoprocessing",
+    title: "Geoprocessing Toolbox",
     defaultWidth: 320,
     render(container) {
       //Wrapper
@@ -503,7 +503,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
         document.createElement("h2"),
         "geoprocessing-heading",
       );
-      heading.textContent = "Spatio Geoprocessing Workbench";
+      heading.textContent = "Geoprocessing Workbench";
 
       //Method Select
       const method = applyRightPanelStyles(
@@ -542,7 +542,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
   // Open it right away so the example is visible on activation. Remove this call
   // (or gate it behind a button in your control) if you would rather open the
   // panel on demand instead of every time the plugin activates.
-  app.openRightPanel?.(RIGHT_PANEL_ID);
+  //app.openRightPanel?.(RIGHT_PANEL_ID);
 
   return () => {
     app.closeRightPanel?.(RIGHT_PANEL_ID);
