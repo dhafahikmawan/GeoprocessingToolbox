@@ -66,7 +66,7 @@ let _methodForm : HTMLElement;
 export function setMethod(process : string){
   if(_method && _methodForm){
     _method.value = process;
-    loadMethodForm(_methodForm, process);
+    loadOptionForm(_methodForm, process);
   }
 }
 
@@ -169,7 +169,7 @@ function removeAllChildElements(parent:  HTMLElement){
   }
 }
 
-function loadMethodForm(wrapper: HTMLElement, method : string){
+function loadOptionForm(wrapper: HTMLElement, method : string){
   //Clean Forms
   removeAllChildElements(wrapper);
   //Layers
@@ -447,7 +447,7 @@ function loadMethodForm(wrapper: HTMLElement, method : string){
   }
 }
 
-function drawGeoprocessingMethods(dropdown : HTMLElement, methods: string[], tcs: string[]){
+function drawDropdownOptions(dropdown : HTMLElement, methods: string[], tcs: string[]){
   for(let i =0; i< methods.length; i++){
     const option = applyRightPanelStyles(
       document.createElement("option"),
@@ -510,7 +510,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
         document.createElement("select"),
         "geoprocessing-base-select",
       );
-      drawGeoprocessingMethods(method, BASE_METHODS, BASE_METHODS_TC);
+      drawDropdownOptions(method, BASE_METHODS, BASE_METHODS_TC);
       _method = method;
 
       //Method Form Container
@@ -529,7 +529,7 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
 
       //Event: Method selected
       method.addEventListener("change", () => {
-        loadMethodForm(methodFormContainer, method.value);
+        loadOptionForm(methodFormContainer, method.value);
       });
 
       // Optional cleanup, run when the panel closes or is unregistered.
