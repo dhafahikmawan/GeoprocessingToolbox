@@ -215,7 +215,7 @@ export interface GeoLibreAppAPI<TControl extends GeoLibreControl = GeoLibreContr
   getLayerFeatures?: (layerId: string) => Feature<Geometry | null>[];
   getSelectedFeatures?: () => Feature<Geometry | null>[];
   getSelectedLayerId?: () => string | null;
-
+  getMap?: () => import("maplibre-gl").Map | null;
   addGeoJsonLayer: (
     name: string,
     data: FeatureCollection,
