@@ -8,6 +8,7 @@ import {
   RIGHT_PANEL_ID,
   registerTemplateRightPanel,
 } from "../src/lib/geolibre/right-panel";
+import { applySpazioRightPanelStyles } from "../src/lib/styles/spazio-right-panel-styles";
 
 /**
  * Minimal stub of the host API. Captures the right-panel registration so the
@@ -51,14 +52,12 @@ describe("registerTemplateRightPanel", () => {
     const container = document.createElement("div");
     const cleanup = panel?.render(container);
     expect(container.querySelector("h2")?.textContent).toBe(
-      "Spatio Geoprocessing Workbench",
+      "Geoprocessing Workbench",
     );
-    expect(container.querySelector(".spatio-geoprocessing-right-panel"))
-      .toBeTruthy();
+    expect(container.querySelector(".spazio-container")).toBeTruthy();
 
-    const method = container.querySelector<HTMLSelectElement>(
-      ".geoprocessing-base-select",
-    );
+    const method = container.querySelector<HTMLSelectElement>(".spazio-dropdown");
+    expect(applySpazioRightPanelStyles(document.createElement("select"), "spazio-dropdown").className).toBe("spazio-dropdown");
     expect(method?.style.border).toBeTruthy();
     expect(method?.options[0].style.backgroundColor).toMatch(
       /white|rgb\(255, 255, 255\)/,
@@ -70,7 +69,7 @@ describe("registerTemplateRightPanel", () => {
     method!.value = "Buffer";
     method!.dispatchEvent(new Event("change"));
 
-    const form = container.querySelector(".geoprocessing-base-form-container")!;
+    const form = container.querySelector(".spazio-form-container")!;
     expect(form.querySelectorAll("input")).toHaveLength(2);
     expect(form.querySelector("input[type=number]")?.style.border).toBeTruthy();
     expect(form.querySelector("input[type=file]")?.style.border).toBeTruthy();
@@ -80,7 +79,7 @@ describe("registerTemplateRightPanel", () => {
     method!.value = "Dissolve";
     method!.dispatchEvent(new Event("change"));
     const dissolveOption = container.querySelector(
-      ".geoprocessing-dissolve-attribute-option",
+      ".spazio-dropdown-options",
     ) as HTMLOptionElement;
     expect(dissolveOption.style.backgroundColor).toMatch(
       /white|rgb\(255, 255, 255\)/,
