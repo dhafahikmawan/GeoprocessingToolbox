@@ -1,13 +1,13 @@
 import type { GeoLibreAppAPI, GeoLibreControl } from "./host-api";
-import type { BufferUnits } from "../geoprocessing/buffer";
-import { createBufferVector } from "../geoprocessing/buffer";
+import type { BufferUnits } from "../SpazioProcessing/buffer";
+import { createBufferVector } from "../SpazioProcessing/buffer";
 import { FeatureCollection, GeoJsonProperties, Geometry, MultiPolygon, Polygon } from "geojson";
-import { createDissolveVector } from "../geoprocessing/dissolve";
-import { createIntersectVector } from "../geoprocessing/intersect";
-import { createEraseVector } from "../geoprocessing/erase";
-import { createClipVector } from "../geoprocessing/clip";
-import { createUnionVector } from "../geoprocessing/union";
-import { createSpatialJoinVector } from "../geoprocessing/spatial-join";
+import { createDissolveVector } from "../SpazioProcessing/dissolve";
+import { createIntersectVector } from "../SpazioProcessing/intersect";
+import { createEraseVector } from "../SpazioProcessing/erase";
+import { createClipVector } from "../SpazioProcessing/clip";
+import { createUnionVector } from "../SpazioProcessing/union";
+import { createSpatialJoinVector } from "../SpazioProcessing/spatial-join";
 import shp from "shpjs";
 import { kml, gpx } from "@tmcw/togeojson";
 import { applyRightPanelStyle } from "../styles/spazio-right-panel-styles";
@@ -28,7 +28,7 @@ import { applyRightPanelStyle } from "../styles/spazio-right-panel-styles";
  */
 
 /** Stable id for this plugin's right panel. Replace with your own. */
-export const RIGHT_PANEL_ID = "spatio-geoprocessing-toolbox-panel";
+export const RIGHT_PANEL_ID = "spazio-geoprocessing-toolbox-panel";
 
 export const BASE_METHODS = [
   "",
@@ -146,7 +146,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
   //Layers
   const layerDropdown = document.createElement("select");
   applyRightPanelStyle(layerDropdown, "methodSelect");
-  drawLayerDropdown(layerDropdown);
+  //drawLayerDropdown(layerDropdown);
   wrapper.appendChild(layerDropdown);
   //Base Form
   const fileInputALabel = document.createElement("h1");
@@ -397,7 +397,7 @@ function drawDropdownOptions(dropdown : HTMLElement, methods: string[], tcs: str
     dropdown.appendChild(option);
   }
 }
-
+/*
 function drawLayerDropdown(dropdown : HTMLElement){
   const layers = _app.listLayers?.();
   if(layers){
@@ -412,7 +412,7 @@ function drawLayerDropdown(dropdown : HTMLElement){
     });
   }
 }
-
+*/
 
 
 export function registerTemplateRightPanel<TControl extends GeoLibreControl>(

@@ -15,7 +15,7 @@ import { RIGHT_PANEL_ID, setMethod, BASE_METHODS } from "./right-panel";
  */
 
 /** Stable id for this plugin's toolbar menu. Replace with your own. */
-export const TOOLBAR_MENU_ID = "spatio-geoprocessing-toolbox-menu";
+export const TOOLBAR_MENU_ID = "spazio-geoprocessing-toolbox-menu";
 
 /**
  * Register the template's top toolbar menu.
