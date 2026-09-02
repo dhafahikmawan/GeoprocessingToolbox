@@ -1,5 +1,5 @@
 import * as turf from '@turf/turf';
-import type { FeatureCollection, GeoJsonProperties, Feature, Polygon, MultiPolygon, Geometry } from 'geojson';
+import type { FeatureCollection, GeoJsonProperties, Feature, Polygon, MultiPolygon } from 'geojson';
 //import { Feature } from 'maplibre-gl';
 
 function normalizeProperties(value: Record<string, unknown> | null | undefined) {

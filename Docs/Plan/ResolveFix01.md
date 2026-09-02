@@ -1,335 +1,230 @@
-# Implementation Plan: Spazio Right Panel Styling Standardization (Fix01)
+# Implementation Plan: Right Panel Styling Migration to Master Spazio Registry
 
-This plan implements [`Docs/Fix/Fix01.md`](../Fix/Fix01.md). It is written as a clear, step-by-step specification for a junior developer or a budget AI coding agent. Follow each step carefully, maintain exact class names, and verify all tests and builds before finishing.
-
----
-
-## 1. Overview & Objective
-
-The objective is to standardize the right-sidebar panel styles using a unified Spazio style registry (`src/lib/styles/spazio-right-panel-styles.ts`) and migrate all DOM element class names in `src/lib/geolibre/right-panel.ts` to follow the `spazio-*` class naming convention.
-
-### Key Rules & Requirements:
-1. **Style Registry File**:
-   - Create `src/lib/styles/spazio-right-panel-styles.ts` (with typed style dictionary and `applySpazioRightPanelStyles` helper).
-   - Standardize all class names with the `spazio-` prefix.
-   - Retain visual style requirements:
-     - Dropdowns have borders.
-     - Dropdown options have `#ffffff` (white) background and `#000000` (black) text.
-     - Inputs (text, number, file) have borders.
-     - Buttons have borders and distinct styling.
-2. **Right Panel Consumer (`src/lib/geolibre/right-panel.ts`)**:
-   - Switch imports from `right-panel-styles` to `spazio-right-panel-styles`.
-   - Update every DOM element creation to use `applySpazioRightPanelStyles` and the corresponding `spazio-*` class name.
-   - Do **NOT** add arbitrary runtime class mapping in the registry; change class name initializations directly in `right-panel.ts`.
-   - Keep all geoprocessing computation, event listeners, layer handling, and DOM structures intact.
-3. **Old Registry Cleanup**:
-   - The old registry (`src/lib/styles/right-panel-styles.ts`) may be deleted or deprecated once migration is complete.
-4. **Test Updates**:
-   - Update `tests/right-panel.test.ts` to assert against the new `spazio-*` classes and imported styling helper.
+This implementation plan resolves [`Docs/Fix/Fix01.md`](../Fix/Fix01.md). It is written with explicit, step-by-step instructions designed for execution by a junior developer or an automated AI agent.
 
 ---
 
-## 2. Class Name Mapping Specification
+## 1. Overview & Objectives
 
-Map all elements in the right panel strictly to the following `spazio-*` class names:
+We are migrating the styling system of the Geoprocessing Toolbox right panel from the obsolete/local style file (`spazio-right-panel-styles-old.ts` or old references) to the canonical master style registry located in [`src/lib/styles/spazio-right-panel-styles.ts`](../../src/lib/styles/spazio-right-panel-styles.ts).
 
-| Element / Role | Old Class Name | New Spazio Class Name (`Fix01.md`) | Visual / CSS Rules |
+### Core Rules & Constraints
+1. **Zero Raw Class Name Declarations**: `src/lib/geolibre/right-panel.ts` must **not** set raw CSS class strings directly (e.g. no `element.className = "spazio-dropdown"` or string literal styles passed to old helpers). Styling must be invoked strictly through the helper functions provided in `spazio-right-panel-styles.ts` (specifically `applyRightPanelStyle` / `applyRightPanelStyles`).
+2. **Master Registry Keys**: When applying styles via `applyRightPanelStyle(element, styleKey)`, use the typed style keys defined in `RIGHT_PANEL_STYLES` (which map to class aliases with prefix `spazio-`).
+3. **No Breaking Registry Changes**: Do **not** delete or alter existing style definitions or aliases in `src/lib/styles/spazio-right-panel-styles.ts`, as this file serves as the master registry across the Spazio workspace.
+4. **Remove Dependency on Old Files**: Ensure `src/lib/geolibre/right-panel.ts` has no import or runtime dependency on `src/lib/styles/spazio-right-panel-styles-old.ts` or `src/lib/styles/right-panel-styles.ts`.
+5. **Preserve Geoprocessing Logic**: Do not modify spatial algorithms, file parsing (`shp`, `kml`, `gpx`, `geojson`), event handlers, or layer addition logic.
+
+---
+
+## 2. Style Key & Class Name Mapping Reference
+
+The table below maps the required UI components (from `Docs/Fix/Fix01.md`) to the corresponding style keys in `RIGHT_PANEL_STYLES` and their applied `spazio-` classes:
+
+| UI Component | Fix01 Requirement / Class | Registry Style Key (`RightPanelStyleName`) | Alias Class Added |
 | :--- | :--- | :--- | :--- |
-| **Main Container / Wrapper** | `spatio-geoprocessing-right-panel` | `spazio-container` | Flex column, padding (16px), gap (12px), background `#f8fafc`, border `1px solid #d7dee8`, radius 8px, full width. |
-| **Plugin Title / Heading** | `geoprocessing-heading` | `spazio-title` | Font size 20px, line height 1.2, margin 0, dark slate color `#172033`. |
-| **Plugin Description** | `geoprocessing-description` | `spazio-description` | Muted text `#64748b`, font size 13px, margin 0. |
-| **Input / Field Labels** | `geoprocessing-label` | `spazio-input-label` | Font size 13px, font weight 600, color `#334155`, margin `4px 0 -6px`. |
-| **Dropdowns / Selects** | `geoprocessing-base-select`, `geoprocessing-buffer-unit-select`, `geoprocessing-dissolve-attribute-select`, `geoprocessing-inner-select` | `spazio-dropdown` | Background `#ffffff`, border `1px solid #b8c1cc`, radius 4px, padding `8px 10px`, min-height 36px, width 100%. |
-| **Dropdown Options** | `geoprocessing-method-option`, `geoprocessing-dissolve-attribute-option` | `spazio-dropdown-options` | Background `#ffffff`, text color `#000000`. |
-| **Text / Number Inputs** | `geoprocessing-number-input` | `spazio-text-field` | Background `#ffffff`, border `1px solid #b8c1cc`, radius 4px, padding `8px 10px`, min-height 36px, width 100%. |
-| **File Inputs** | `geoprocessing-file-input` | `spazio-file-field` | Background `#ffffff`, border `1px solid #b8c1cc`, radius 4px, padding `7px`, min-height 36px, width 100%. |
-| **Submit / Processing Buttons** | `geoprocessing-action-button` | `spazio-submit-button` | Accent blue `#2563eb`, border `1px solid #1d4ed8`, color `#ffffff`, font weight 600, radius 4px, padding `8px 14px`, min-height 36px, cursor pointer. |
-| **Secondary / Other Buttons** | *(New / Standard)* | `spazio-button` | Neutral or secondary button styles with border. |
-| **Form Container / Section** | `geoprocessing-base-form-container` | `spazio-form-container` | Display flex, flex column, gap 10px. |
-| **Standard Additional Classes Defined in Spec** | *(Future / Specialized tools)* | `spazio-expression-field`<br>`spazio-calculator-button`<br>`spazio-checkbox`<br>`spazio-slider`<br>`spazio-input-description`<br>`spazio-ahp-table`<br>`spazio-ahp-field`<br>`spazio-ahp-headers`<br>`spazio-status` | Include type definitions and default style mappings in `spazio-right-panel-styles.ts` so future plugins/tools can reuse them. |
+| Main Container | `spazio-container` | `panel` | `geolibre-plugin-right-panel`, `spazio-container` |
+| Title / Heading | `spazio-title` | `heading` | `spazio-title` |
+| Description / Body | `spazio-description` | `description` | `spazio-description` |
+| Input Labels | `spazio-input-label` | `label` | `spazio-input-label` |
+| Input Descriptions | `spazio-input-description` | `inputDescription` | `spazio-input-description` |
+| Form Container | `spazio-form-container` | `formContainer` | `spazio-form-container` |
+| Form Row | `spazio-form-row` | `formRow` | `spazio-form-row` |
+| Dropdowns (`<select>`) | `spazio-dropdown` | `methodSelect` | `spazio-dropdown` |
+| Dropdown Options (`<option>`) | `spazio-dropdown-options` | `selectOption` | `spazio-dropdown-options` |
+| Text / Numeric Inputs | `spazio-text-field` | `input` | `spazio-text-field` |
+| File Input Fields | `spazio-file-field` | `fileField` | `spazio-file-field` |
+| Submit / Action Buttons | `spazio-submit-button` | `operationButton` | `spazio-submit-button` |
+| Secondary / Other Buttons | `spazio-button` | `button` | `spazio-button` |
+| Calculator Buttons | `spazio-calculator-button` | `calculatorButton` | `spazio-calculator-button` |
+| Calculator Expression | `spazio-expression-field` | `expression` | `spazio-expression-field` |
+| Checkboxes | `spazio-checkbox` | `checkbox` | `spazio-checkbox` |
+| Sliders / Ranges | `spazio-slider` | `range` | `spazio-slider` |
+| Status Message | `spazio-status` | `status` | `spazio-status` |
+| AHP Table | `spazio-ahp-table` | `table` | `spazio-ahp-table` |
+| AHP Table Headers | `spazio-ahp-headers` | `tableHeader` | `spazio-ahp-headers` |
+| AHP Table Cells | `spazio-ahp-cell` | `tableCell` | `spazio-ahp-cell` |
+| AHP Table Fields / Inputs | `spazio-ahp-field` | `ahpInput` (or `ahpField`) | `spazio-ahp-input` / `spazio-ahp-field` |
 
 ---
 
-## 3. Step-by-Step Implementation Instructions
+## 3. Step-by-Step Implementation Guide
 
-### Step 1: Create `src/lib/styles/spazio-right-panel-styles.ts`
+### Step 1: Update Imports in `src/lib/geolibre/right-panel.ts`
+**Target File**: [`src/lib/geolibre/right-panel.ts`](../../src/lib/geolibre/right-panel.ts)
 
-Create the new TypeScript style registry file:
-```ts
-export type SpazioRightPanelStyleName =
-  | "spazio-container"
-  | "spazio-title"
-  | "spazio-description"
-  | "spazio-input-label"
-  | "spazio-input-description"
-  | "spazio-dropdown"
-  | "spazio-dropdown-options"
-  | "spazio-text-field"
-  | "spazio-file-field"
-  | "spazio-checkbox"
-  | "spazio-slider"
-  | "spazio-submit-button"
-  | "spazio-button"
-  | "spazio-expression-field"
-  | "spazio-calculator-button"
-  | "spazio-ahp-table"
-  | "spazio-ahp-field"
-  | "spazio-ahp-headers"
-  | "spazio-status"
-  | "spazio-form-container";
+1. Remove the import of `applySpazioRightPanelStyles` from `../styles/spazio-right-panel-styles-old`.
+2. Import `applyRightPanelStyle` from `../styles/spazio-right-panel-styles`.
 
-export const spazioRightPanelStyles: Record<
-  SpazioRightPanelStyleName,
-  Partial<CSSStyleDeclaration>
-> = {
-  "spazio-container": {
-    backgroundColor: "#f8fafc",
-    border: "1px solid #d7dee8",
-    borderRadius: "8px",
-    boxSizing: "border-box",
-    color: "#172033",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    padding: "16px",
-    width: "100%",
-  },
-  "spazio-title": {
-    color: "#172033",
-    fontSize: "20px",
-    lineHeight: "1.2",
-    margin: "0",
-  },
-  "spazio-description": {
-    color: "#64748b",
-    fontSize: "13px",
-    margin: "0",
-  },
-  "spazio-input-label": {
-    color: "#334155",
-    fontSize: "13px",
-    fontWeight: "600",
-    margin: "4px 0 -6px",
-  },
-  "spazio-input-description": {
-    color: "#64748b",
-    fontSize: "12px",
-    margin: "0",
-  },
-  "spazio-dropdown": {
-    backgroundColor: "#ffffff",
-    border: "1px solid #b8c1cc",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#111827",
-    minHeight: "36px",
-    padding: "8px 10px",
-    width: "100%",
-  },
-  "spazio-dropdown-options": {
-    backgroundColor: "#ffffff",
-    color: "#000000",
-  },
-  "spazio-text-field": {
-    backgroundColor: "#ffffff",
-    border: "1px solid #b8c1cc",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#111827",
-    minHeight: "36px",
-    padding: "8px 10px",
-    width: "100%",
-  },
-  "spazio-file-field": {
-    backgroundColor: "#ffffff",
-    border: "1px solid #b8c1cc",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#111827",
-    minHeight: "36px",
-    padding: "7px",
-    width: "100%",
-  },
-  "spazio-checkbox": {
-    boxSizing: "border-box",
-    cursor: "pointer",
-  },
-  "spazio-slider": {
-    boxSizing: "border-box",
-    width: "100%",
-  },
-  "spazio-submit-button": {
-    backgroundColor: "#2563eb",
-    border: "1px solid #1d4ed8",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#ffffff",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-    minHeight: "36px",
-    padding: "8px 14px",
-    width: "100%",
-  },
-  "spazio-button": {
-    backgroundColor: "#f1f5f9",
-    border: "1px solid #cbd5e1",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#0f172a",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-    minHeight: "36px",
-    padding: "8px 14px",
-    width: "100%",
-  },
-  "spazio-expression-field": {
-    backgroundColor: "#ffffff",
-    border: "1px solid #b8c1cc",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#111827",
-    fontFamily: "monospace",
-    minHeight: "36px",
-    padding: "8px 10px",
-    width: "100%",
-  },
-  "spazio-calculator-button": {
-    backgroundColor: "#e2e8f0",
-    border: "1px solid #cbd5e1",
-    borderRadius: "4px",
-    boxSizing: "border-box",
-    color: "#0f172a",
-    cursor: "pointer",
-    padding: "6px 10px",
-  },
-  "spazio-ahp-table": {
-    borderCollapse: "collapse",
-    boxSizing: "border-box",
-    width: "100%",
-  },
-  "spazio-ahp-field": {
-    backgroundColor: "#ffffff",
-    border: "1px solid #b8c1cc",
-    borderRadius: "2px",
-    boxSizing: "border-box",
-    padding: "4px",
-    width: "100%",
-  },
-  "spazio-ahp-headers": {
-    backgroundColor: "#f1f5f9",
-    border: "1px solid #cbd5e1",
-    color: "#334155",
-    fontWeight: "600",
-    padding: "6px",
-    textAlign: "center",
-  },
-  "spazio-status": {
-    color: "#475569",
-    fontSize: "13px",
-    margin: "4px 0",
-  },
-  "spazio-form-container": {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-};
+```typescript
+// Replace:
+// import { applySpazioRightPanelStyles } from "../styles/spazio-right-panel-styles-old";
 
-export function applySpazioRightPanelStyles<T extends HTMLElement>(
-  element: T,
-  className: SpazioRightPanelStyleName,
-): T {
-  element.className = className;
-  Object.assign(element.style, spazioRightPanelStyles[className]);
-  return element;
-}
+// With:
+import { applyRightPanelStyle } from "../styles/spazio-right-panel-styles";
 ```
 
----
+### Step 2: Refactor Helper Functions in `src/lib/geolibre/right-panel.ts`
 
-### Step 2: Refactor `src/lib/geolibre/right-panel.ts`
-
-1. **Update Import**:
-   Replace:
-   ```ts
-   import { applyRightPanelStyles } from "../styles/right-panel-styles";
+1. **`drawDropdownOptions`**:
+   - Apply `selectOption` style to every generated `<option>`.
+   ```typescript
+   function drawDropdownOptions(dropdown: HTMLElement, methods: string[], tcs: string[]) {
+     for (let i = 0; i < methods.length; i++) {
+       const option = document.createElement("option");
+       applyRightPanelStyle(option, "selectOption");
+       option.value = methods[i];
+       option.textContent = i < tcs.length ? tcs[i] : methods[i];
+       dropdown.appendChild(option);
+     }
+   }
    ```
-   with:
-   ```ts
-   import { applySpazioRightPanelStyles } from "../styles/spazio-right-panel-styles";
+
+2. **`drawLayerDropdown`**:
+   - Apply `selectOption` style to layer `<option>` elements.
+   ```typescript
+   function drawLayerDropdown(dropdown: HTMLElement) {
+     const layers = _app.listLayers?.();
+     if (layers) {
+       layers.forEach(layer => {
+         const option = document.createElement("option");
+         applyRightPanelStyle(option, "selectOption");
+         option.value = layer.id;
+         option.textContent = layer.name;
+         dropdown.appendChild(option);
+       });
+     }
+   }
    ```
-2. **Update all element styling calls in `right-panel.ts`**:
-   - `drawSelectOptions`:
-     - Placeholder and option elements: apply `spazio-dropdown-options`.
-   - `drawDropdownOptions`:
-     - Option elements: apply `spazio-dropdown-options`.
-   - `drawLayerDropdown`:
-     - Layer dropdown select element (and option elements): select with `spazio-dropdown` and options with `spazio-dropdown-options`.
-   - `loadOptionForm`:
-     - `layerDropdown`: `spazio-dropdown`
-     - `fileInputALabel`, `fileInputBLabel`, `sJoinRelLabel`, `sJoinMethodLabel`: `spazio-input-label`
-     - `fileInputA`, `fileInputB`: `spazio-file-field`
-     - `bufferRadius`: `spazio-text-field`
-     - `bufferUnitSelect`: `spazio-dropdown`
-     - `bufferUnitSelect` options: `spazio-dropdown-options`
-     - `bufferButton`, `dissolveButton`, `intersectButton`, `unionButton`, `spJoinButton`, `clipButton`, `eraseButton`: `spazio-submit-button`
-     - `attrSelect`, `sJoinRelSelect`, `sJoinMethodSelect`: `spazio-dropdown`
-     - Option items inside selects: `spazio-dropdown-options`
-   - `registerTemplateRightPanel` -> `render(container)`:
-     - `wrap`: `spazio-container`
-     - `heading`: `spazio-title`
-     - `body`: `spazio-description`
-     - `method`: `spazio-dropdown`
-     - `methodFormContainer`: `spazio-form-container`
+
+### Step 3: Refactor `loadOptionForm` in `src/lib/geolibre/right-panel.ts`
+
+Ensure every DOM element created receives its styling via `applyRightPanelStyle(element, styleKey)`:
+
+1. **Layer Dropdown**:
+   ```typescript
+   const layerDropdown = document.createElement("select");
+   applyRightPanelStyle(layerDropdown, "methodSelect");
+   drawLayerDropdown(layerDropdown);
+   wrapper.appendChild(layerDropdown);
+   ```
+
+2. **Base Input Layer Label & File Field**:
+   ```typescript
+   const fileInputALabel = document.createElement("h1");
+   applyRightPanelStyle(fileInputALabel, "label");
+   fileInputALabel.textContent = "Input Layer: ";
+   wrapper.appendChild(fileInputALabel);
+
+   const fileInputA = document.createElement("input");
+   applyRightPanelStyle(fileInputA, "fileField");
+   fileInputA.type = "file";
+   fileInputA.accept = ".geojson,application/json,.zip,.kml,.gpx";
+   wrapper.appendChild(fileInputA);
+   ```
+
+3. **Buffer Controls**:
+   - `bufferRadius`: `applyRightPanelStyle(bufferRadius, "input");`
+   - `bufferUnitSelect`: `applyRightPanelStyle(bufferUnitSelect, "methodSelect");`
+   - `bufferUnitSelect` options: apply `selectOption` to each option.
+   - `bufferButton`: `applyRightPanelStyle(bufferButton, "operationButton");`
+
+4. **Dissolve Controls**:
+   - `attrSelect`: `applyRightPanelStyle(attrSelect, "methodSelect");`
+   - `placeholderOption`: `applyRightPanelStyle(placeholderOption, "selectOption");`
+   - `dissolveButton`: `applyRightPanelStyle(dissolveButton, "operationButton");`
+
+5. **Overlay Controls (Intersect, Union, Spatial Join, Clip, Erase)**:
+   - `fileInputBLabel`: `applyRightPanelStyle(fileInputBLabel, "label");`
+   - `fileInputB`: `applyRightPanelStyle(fileInputB, "fileField");`
+   - `intersectButton`: `applyRightPanelStyle(intersectButton, "operationButton");`
+   - `unionButton`: `applyRightPanelStyle(unionButton, "operationButton");`
+   - `clipButton`: `applyRightPanelStyle(clipButton, "operationButton");`
+   - `eraseButton`: `applyRightPanelStyle(eraseButton, "operationButton");`
+
+6. **Spatial Join Controls**:
+   - `sJoinRelLabel`: `applyRightPanelStyle(sJoinRelLabel, "label");`
+   - `sJoinRelSelect`: `applyRightPanelStyle(sJoinRelSelect, "methodSelect");`
+   - `sJoinRelSelect` options: apply `selectOption` to each option.
+   - `sJoinMethodLabel`: `applyRightPanelStyle(sJoinMethodLabel, "label");`
+   - `sJoinMethodSelect`: `applyRightPanelStyle(sJoinMethodSelect, "methodSelect");`
+   - `sJoinMethodSelect` options: apply `selectOption` to each option.
+   - `spJoinButton`: `applyRightPanelStyle(spJoinButton, "operationButton");`
+
+### Step 4: Refactor `registerTemplateRightPanel` in `src/lib/geolibre/right-panel.ts`
+
+Inside the `render(container)` callback:
+
+1. **Outer Wrap**:
+   ```typescript
+   const wrap = document.createElement("div");
+   applyRightPanelStyle(wrap, "panel");
+   ```
+2. **Heading**:
+   ```typescript
+   const heading = document.createElement("h2");
+   applyRightPanelStyle(heading, "heading");
+   heading.textContent = "Geoprocessing Workbench";
+   ```
+3. **Description / Body**:
+   ```typescript
+   const body = document.createElement("p");
+   applyRightPanelStyle(body, "description");
+   ```
+4. **Method Selector Dropdown**:
+   ```typescript
+   const method = document.createElement("select");
+   applyRightPanelStyle(method, "methodSelect");
+   drawDropdownOptions(method, BASE_METHODS, BASE_METHODS_TC);
+   _method = method;
+   ```
+5. **Method Form Container**:
+   ```typescript
+   const methodFormContainer = document.createElement("div");
+   applyRightPanelStyle(methodFormContainer, "formContainer");
+   _methodForm = methodFormContainer;
+   ```
 
 ---
 
-### Step 3: Remove / Clean up Old Style Registry
+## 4. Verification & Validation Plan
 
-1. Delete `src/lib/styles/right-panel-styles.ts` (or deprecate it; Fix01 notes the old registry might be deleted after this change).
-2. Check if any other files in `src/` import `right-panel-styles.ts`.
+### Automated Checks
+Run the following suite from the project root:
 
----
+1. **Lint Check**:
+   ```bash
+   npm run lint
+   ```
+   *Expected*: Passes with 0 errors and 0 warnings.
 
-### Step 4: Update Unit Tests in `tests/right-panel.test.ts`
+2. **TypeScript Compilation & Build**:
+   ```bash
+   npm run build
+   ```
+   *Expected*: `tsc -p tsconfig.json` passes, `vite build` builds both library and geolibre targets cleanly.
 
-Update class name selectors and assertions in `tests/right-panel.test.ts`:
-1. Change `.spatio-geoprocessing-right-panel` to `.spazio-container`.
-2. Change `.geoprocessing-base-select` to `.spazio-dropdown`.
-3. Change `.geoprocessing-base-form-container` to `.spazio-form-container`.
-4. Change `.geoprocessing-dissolve-attribute-option` / `.geoprocessing-method-option` to `.spazio-dropdown-options`.
-5. Verify that:
-   - Dropdowns and input fields have non-empty `style.border`.
-   - Dropdown options have white background and black text.
-   - Submit buttons have non-empty `style.border`.
+3. **Packaging Check**:
+   ```bash
+   npm run package:geolibre
+   ```
+   *Expected*: Produces plugin package without errors.
 
----
+4. **Unit Tests (if existing / configured)**:
+   ```bash
+   npm test
+   ```
+   *Expected*: All tests pass.
 
-## 4. Verification Sequence
-
-Execute the following commands from repository root in order:
-
-```bash
-# 1. Run unit tests
-npm test
-
-# 2. Run linter
-npm run lint
-
-# 3. Build library & GeoLibre bundle
-npm run build
-npm run build:geolibre
-
-# 4. Package plugin
-npm run package:geolibre
-```
-
-### Manual Checklist for Junior Dev / AI:
-- [ ] `src/lib/styles/spazio-right-panel-styles.ts` contains all classes listed in `Fix01.md`.
-- [ ] No occurrences of `geoprocessing-` or old `spatio-` class names remain in `src/lib/geolibre/right-panel.ts`.
-- [ ] `src/lib/geolibre/right-panel.ts` imports and uses `applySpazioRightPanelStyles`.
-- [ ] All tests in `tests/right-panel.test.ts` pass without errors.
-- [ ] `npm run lint` reports 0 warnings/errors.
-- [ ] `npm run build` and `npm run package:geolibre` succeed cleanly.
+### Manual / DOM Verification Checklist
+Verify that:
+- [ ] No raw CSS class string assignments exist in `src/lib/geolibre/right-panel.ts`.
+- [ ] `src/lib/geolibre/right-panel.ts` does not import `spazio-right-panel-styles-old.ts`.
+- [ ] The right panel root element has classes `geolibre-plugin-right-panel` and `spazio-container`.
+- [ ] Dropdowns have class `spazio-dropdown` with correct border styling.
+- [ ] Dropdown options have class `spazio-dropdown-options` (white background, black text).
+- [ ] File inputs have class `spazio-file-field`.
+- [ ] Number inputs have class `spazio-text-field`.
+- [ ] Action buttons have class `spazio-submit-button`.
+- [ ] Labels have class `spazio-input-label`.
+- [ ] Switching between methods (Buffer, Dissolve, Intersect, Union, Spatial Join, Clip, Erase) continues to render appropriate forms and execute geoprocessing operations seamlessly.

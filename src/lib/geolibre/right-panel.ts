@@ -10,7 +10,7 @@ import { createUnionVector } from "../geoprocessing/union";
 import { createSpatialJoinVector } from "../geoprocessing/spatial-join";
 import shp from "shpjs";
 import { kml, gpx } from "@tmcw/togeojson";
-import { applySpazioRightPanelStyles } from "../styles/spazio-right-panel-styles";
+import { applyRightPanelStyle } from "../styles/spazio-right-panel-styles";
 
 /**
  * Demonstration of the GeoLibre right-sidebar panel host API.
@@ -144,50 +144,38 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
   //Clean Forms
   removeAllChildElements(wrapper);
   //Layers
-  const layerDropdown = applySpazioRightPanelStyles(
-    document.createElement("select"),
-    "spazio-dropdown",
-  );
+  const layerDropdown = document.createElement("select");
+  applyRightPanelStyle(layerDropdown, "methodSelect");
   drawLayerDropdown(layerDropdown);
   wrapper.appendChild(layerDropdown);
   //Base Form
-  const fileInputALabel = applySpazioRightPanelStyles(
-    document.createElement("h1"),
-    "spazio-input-label",
-  );
+  const fileInputALabel = document.createElement("h1");
+  applyRightPanelStyle(fileInputALabel, "label");
   fileInputALabel.textContent = "Input Layer: ";
   wrapper.appendChild(fileInputALabel);
 
-  const fileInputA = applySpazioRightPanelStyles(
-    document.createElement("input"),
-    "spazio-file-field",
-  );
+  const fileInputA = document.createElement("input");
+  applyRightPanelStyle(fileInputA, "fileField");
   fileInputA.type = "file";
   fileInputA.accept = ".geojson,application/json,.zip,.kml,.gpx";
   wrapper.appendChild(fileInputA);
   //Buffer Form
   if(method === "Buffer"){
-    const bufferRadius = applySpazioRightPanelStyles(
-      document.createElement("input"),
-      "spazio-text-field",
-    );
+    const bufferRadius = document.createElement("input");
+    applyRightPanelStyle(bufferRadius, "input");
     bufferRadius.type = "number";
     bufferRadius.min = "0";
     bufferRadius.placeholder = "Distance to Buffer";
 
-    const bufferUnitSelect = applySpazioRightPanelStyles(
-      document.createElement("select"),
-      "spazio-dropdown",
-    );
-    bufferUnitSelect.innerHTML = '<option value="kilometers">Kilometers</option><option value="meters">Meters</option><option value="miles">Miles</option>'
+    const bufferUnitSelect = document.createElement("select");
+    applyRightPanelStyle(bufferUnitSelect, "methodSelect");
+    bufferUnitSelect.innerHTML = '<option value="kilometers">Kilometers</option><option value="meters">Meters</option><option value="miles">Miles</option>';
     Array.from(bufferUnitSelect.options).forEach((option) => {
-      applySpazioRightPanelStyles(option, "spazio-dropdown-options");
+      applyRightPanelStyle(option as HTMLElement, "selectOption");
     });
 
-    const bufferButton = applySpazioRightPanelStyles(
-      document.createElement("button"),
-      "spazio-submit-button",
-    );
+    const bufferButton = document.createElement("button");
+    applyRightPanelStyle(bufferButton, "operationButton");
     bufferButton.type = "button";
     bufferButton.textContent = "Buffer";
     bufferButton.addEventListener("click", async () => {
@@ -201,9 +189,6 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
         }catch(e){
           console.log("error when buffering : ", e);
         }
-        
-      }else{
-        
       }
     });
     wrapper.appendChild(bufferRadius);
@@ -211,22 +196,16 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
     wrapper.appendChild(bufferButton);
   }
   else if(method === "Dissolve"){
-    const attrSelect = applySpazioRightPanelStyles(
-      document.createElement("select"),
-      "spazio-dropdown",
-    );
-    const placeholderOption = applySpazioRightPanelStyles(
-      document.createElement("option"),
-      "spazio-dropdown-options",
-    );
+    const attrSelect = document.createElement("select");
+    applyRightPanelStyle(attrSelect, "methodSelect");
+    const placeholderOption = document.createElement("option");
+    applyRightPanelStyle(placeholderOption, "selectOption");
     placeholderOption.value = "";
-    placeholderOption.textContent = "Select Dissolving Attribute"
+    placeholderOption.textContent = "Select Dissolving Attribute";
     // {lang:id} Pilih Properti Peleburan
     attrSelect.appendChild(placeholderOption);
-    const dissolveButton = applySpazioRightPanelStyles(
-      document.createElement("button"),
-      "spazio-submit-button",
-    );
+    const dissolveButton = document.createElement("button");
+    applyRightPanelStyle(dissolveButton, "operationButton");
     dissolveButton.type = "button";
     dissolveButton.textContent = "Dissolve";
     fileInputA.addEventListener('change', async () =>{
@@ -239,10 +218,10 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           console.log(parsed);
           console.log(parsed.features);
           parsed.features = getPolygons(parsed);
-          console.log("PolygonFeatures")
+          console.log("PolygonFeatures");
           const properties = getAllPropertyNames(parsed);
           const attrOptions = ["Select Dissolving Property", ...properties];
-          const attrOptionsTc = ["", ...properties]
+          const attrOptionsTc = ["", ...properties];
           console.log("Properties: ");
           console.log(properties);
           drawDropdownOptions(attrSelect, attrOptions, attrOptionsTc);
@@ -252,7 +231,7 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       }else{
         console.log("Error: No file");
       }
-    })
+    });
     dissolveButton.addEventListener('click', async ()=>{
       const file = fileInputA.files?.[0];
       if(file){
@@ -269,29 +248,23 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       else{
         console.log("Error: No file");
       }
-    })
+    });
     wrapper.appendChild(attrSelect);
     wrapper.appendChild(dissolveButton);
   }else{
-    const fileInputBLabel = applySpazioRightPanelStyles(
-      document.createElement("h1"),
-      "spazio-input-label",
-    );
+    const fileInputBLabel = document.createElement("h1");
+    applyRightPanelStyle(fileInputBLabel, "label");
     fileInputBLabel.textContent = "Overlay Layer: ";
     wrapper.appendChild(fileInputBLabel);
 
-    const fileInputB = applySpazioRightPanelStyles(
-      document.createElement("input"),
-      "spazio-file-field",
-    );
+    const fileInputB = document.createElement("input");
+    applyRightPanelStyle(fileInputB, "fileField");
     fileInputB.type = "file";
     fileInputB.accept = ".geojson,application/json,.zip,.kml,.gpx";
     wrapper.appendChild(fileInputB);
     if(method === "Intersect"){
-      const intersectButton = applySpazioRightPanelStyles(
-        document.createElement("button"),
-        "spazio-submit-button",
-      );
+      const intersectButton = document.createElement("button");
+      applyRightPanelStyle(intersectButton, "operationButton");
       intersectButton.type = "button";
       intersectButton.textContent = "Intersect";
       wrapper.appendChild(intersectButton);
@@ -302,22 +275,20 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           let parsedInput = await convertToGeoJson(fileInput);
           let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
-          parsedOverlay.features = getPolygons(parsedOverlay); 
+          parsedOverlay.features = getPolygons(parsedOverlay);
 
           const intersectVector = createIntersectVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
           _app.addGeoJsonLayer("Intersected Layer", intersectVector!);
         }
         else if(!fileInput) console.log("No input file");
         else console.log("No overlay file");
-      })
+      });
     }
     else if(method === "Union"){
-      const unionButton = applySpazioRightPanelStyles(
-        document.createElement("button"),
-        "spazio-submit-button",
-      );
+      const unionButton = document.createElement("button");
+      applyRightPanelStyle(unionButton, "operationButton");
       unionButton.type = "button";
-      unionButton.textContent = "Union"
+      unionButton.textContent = "Union";
       wrapper.appendChild(unionButton);
       unionButton.addEventListener('click', async() =>{
         const fileInput = fileInputA.files?.[0];
@@ -333,38 +304,28 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       });
     }
     else if(method === "Spatial Join"){
-      const sJoinRelLabel = applySpazioRightPanelStyles(
-        document.createElement("h1"),
-        "spazio-input-label",
-      );
+      const sJoinRelLabel = document.createElement("h1");
+      applyRightPanelStyle(sJoinRelLabel, "label");
       sJoinRelLabel.textContent = "Spatial Realtionship:";
       // {lang:id} Hubungan Spasial
-      const sJoinRelSelect = applySpazioRightPanelStyles(
-        document.createElement("select"),
-        "spazio-dropdown",
-      );
+      const sJoinRelSelect = document.createElement("select");
+      applyRightPanelStyle(sJoinRelSelect, "methodSelect");
       sJoinRelSelect.innerHTML = '<option value="intersects">Intersects</option><option value="within">Within</option><option value="contains">Contains</option><option value="closest">Closest</option>';
       Array.from(sJoinRelSelect.options).forEach((option) => {
-        applySpazioRightPanelStyles(option, "spazio-dropdown-options");
+        applyRightPanelStyle(option as HTMLElement, "selectOption");
       });
-      const sJoinMethodLabel = applySpazioRightPanelStyles(
-        document.createElement("h1"),
-        "spazio-input-label",
-      );
-      sJoinMethodLabel.textContent = "Join Type:"
+      const sJoinMethodLabel = document.createElement("h1");
+      applyRightPanelStyle(sJoinMethodLabel, "label");
+      sJoinMethodLabel.textContent = "Join Type:";
       // {lang:id} Tipe Join
-      const sJoinMethodSelect = applySpazioRightPanelStyles(
-        document.createElement("select"),
-        "spazio-dropdown",
-      );
+      const sJoinMethodSelect = document.createElement("select");
+      applyRightPanelStyle(sJoinMethodSelect, "methodSelect");
       sJoinMethodSelect.innerHTML = '<option value="inner">Inner</option><option value="left">Left</option>';
       Array.from(sJoinMethodSelect.options).forEach((option) => {
-        applySpazioRightPanelStyles(option, "spazio-dropdown-options");
+        applyRightPanelStyle(option as HTMLElement, "selectOption");
       });
-      const spJoinButton = applySpazioRightPanelStyles(
-        document.createElement("button"),
-        "spazio-submit-button",
-      );
+      const spJoinButton = document.createElement("button");
+      applyRightPanelStyle(spJoinButton, "operationButton");
       spJoinButton.type = "button";
       spJoinButton.textContent = "Spatial Join";
       wrapper.appendChild(sJoinRelLabel);
@@ -386,12 +347,10 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
       });
     }
     else if(method === "Clip"){
-      const clipButton = applySpazioRightPanelStyles(
-        document.createElement("button"),
-        "spazio-submit-button",
-      );
+      const clipButton = document.createElement("button");
+      applyRightPanelStyle(clipButton, "operationButton");
       clipButton.type = "button";
-      clipButton.textContent = "Clip"
+      clipButton.textContent = "Clip";
       wrapper.appendChild(clipButton);
       clipButton.addEventListener('click', async() => {
         const fileInput = fileInputA.files?.[0];
@@ -404,13 +363,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           const clippedVector = createClipVector(parsedInput as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
           _app.addGeoJsonLayer("Clipped Layer", clippedVector);
         }
-      })
+      });
     }
     else if(method === "Erase"){
-      const eraseButton = applySpazioRightPanelStyles(
-        document.createElement("button"),
-        "spazio-submit-button",
-      );
+      const eraseButton = document.createElement("button");
+      applyRightPanelStyle(eraseButton, "operationButton");
       eraseButton.type = "button";
       eraseButton.textContent = "Erase";
       wrapper.appendChild(eraseButton);
@@ -421,11 +378,11 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
           let parsedInput = await convertToGeoJson(fileInput);
           let parsedOverlay = await convertToGeoJson(fileOverlay);
           parsedInput.features = getPolygons(parsedInput);
-          parsedOverlay.features = getPolygons(parsedOverlay); 
+          parsedOverlay.features = getPolygons(parsedOverlay);
           const erasedVector = createEraseVector(parsedInput  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>, parsedOverlay  as FeatureCollection<Polygon|MultiPolygon, GeoJsonProperties>);
           _app.addGeoJsonLayer("Erased Layer", erasedVector);
         }
-      })
+      });
     }
     else return;
   }
@@ -433,10 +390,8 @@ function loadOptionForm(wrapper: HTMLElement, method : string){
 
 function drawDropdownOptions(dropdown : HTMLElement, methods: string[], tcs: string[]){
   for(let i =0; i< methods.length; i++){
-    const option = applySpazioRightPanelStyles(
-      document.createElement("option"),
-      "spazio-dropdown-options",
-    );
+    const option = document.createElement("option");
+    applyRightPanelStyle(option, "selectOption");
     option.value = methods[i];
     option.textContent = i<tcs.length?tcs[i]:methods[i];
     dropdown.appendChild(option);
@@ -447,10 +402,8 @@ function drawLayerDropdown(dropdown : HTMLElement){
   const layers = _app.listLayers?.();
   if(layers){
     layers.forEach(layer => {
-      const option =  applySpazioRightPanelStyles(
-        document.createElement("option"),
-        "spazio-dropdown-options",
-      );
+      const option = document.createElement("option");
+      applyRightPanelStyle(option, "selectOption");
       option.value = layer.id;
       option.textContent = layer.name;
       dropdown.appendChild(option);
@@ -476,37 +429,27 @@ export function registerTemplateRightPanel<TControl extends GeoLibreControl>(
     defaultWidth: 320,
     render(container) {
       //Wrapper
-      const wrap = applySpazioRightPanelStyles(
-        document.createElement("div"),
-        "spazio-container",
-      );
+      const wrap = document.createElement("div");
+      applyRightPanelStyle(wrap, "panel");
 
       //Description
-      const heading = applySpazioRightPanelStyles(
-        document.createElement("h2"),
-        "spazio-title",
-      );
+      const heading = document.createElement("h2");
+      applyRightPanelStyle(heading, "heading");
       heading.textContent = "Geoprocessing Workbench";
       // {lang:id} Panel Geoprocessing
 
       //Method Select
-      const method = applySpazioRightPanelStyles(
-        document.createElement("select"),
-        "spazio-dropdown",
-      );
+      const method = document.createElement("select");
+      applyRightPanelStyle(method, "methodSelect");
       drawDropdownOptions(method, BASE_METHODS, BASE_METHODS_TC);
       _method = method;
 
       //Method Form Container
-      const methodFormContainer = applySpazioRightPanelStyles(
-        document.createElement("div"),
-        "spazio-form-container",
-      );
+      const methodFormContainer = document.createElement("div");
+      applyRightPanelStyle(methodFormContainer, "formContainer");
       _methodForm = methodFormContainer;
-      const body = applySpazioRightPanelStyles(
-        document.createElement("p"),
-        "spazio-description",
-      );
+      const body = document.createElement("p");
+      applyRightPanelStyle(body, "description");
 
       wrap.append(heading, body, method, methodFormContainer);
       container.appendChild(wrap);

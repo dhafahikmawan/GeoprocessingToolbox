@@ -68,9 +68,9 @@ function isPluginState(value: unknown): value is Partial<PluginState> {
   return true;
 }
 
-export const spatioGeoProcessingToolbox: GeoLibrePlugin<PluginControl> = {
-  id: "spatio-geoprocessing-toolbox",
-  name: "Spatio Geoprocessing Toolbox",
+export const spazioGeoProcessingToolbox: GeoLibrePlugin<PluginControl> = {
+  id: "spazio-geoprocessing-toolbox",
+  name: "Spazio Geoprocessing Toolbox",
   version: "0.1.0",
   urlParameterNames: [PLUGIN_DATA_PARAM],
   activate(app) {
@@ -133,4 +133,4 @@ export const spatioGeoProcessingToolbox: GeoLibrePlugin<PluginControl> = {
   },
 };
 
-export default spatioGeoProcessingToolbox;
+export default spazioGeoProcessingToolbox;

@@ -1,7 +1,4 @@
-### Fix and Update List 01
-
-### Update
-1. Update how the plugin is styled, and how the styling is indexed. There is already an existing style registry in `src/lib/styles/spazio-right-panel-styles`. We are going to use that style registry instead, with these class name rules:
+1. Update how the plugin is styled, and how the styling is indexed. There is already an existing style registry in `src/lib/styles/spazio-right-panel-styles.ts`. We are going to use that style registry instead, with these class name general rules:
     - For the dropdowns, `spazio-dropdown`.
     - For the dropdown options, `spazio-dropdown-options`.
     - For the calculator expression fields (if any), `spazio-expression-field`.
@@ -22,5 +19,8 @@
     - For the title of the plugin (`heading` variable in right panel), `spazio-title`.
     - For the description of the plugin (`body` variable in right panel, currently empty), `spazio-description`.
     - For anything else, check if there is already a suitable class in the registry. If not, create a new class in the registry and port the old styles, make sure that the class name if prefixed with `spazio-` properly.
-Do not add any mapping in the registry, just change the classname initializations in `src/lib/geolibre/right-panel.ts` to match the new class names.
-Assume that the old style registry might be deleted in the future after this change.
+Update the plugin with these consideration in mind:
+- The old registry in `src/lib/styles/right-panel-styles.ts` might be deleted after this process is over. Make sure there is no dependency to the file. No need to delete this file for now.
+- If there is a style clash between the old registry and the new registry, prioritize using the new registry's styles
+- `src/lib/geolibre/right-panel.ts` SHOULD NOT have a raw classname string declaration, it should be handled using the corresponding methods in the registry (applyRightPanelStyle ,...). 
+- Do not delete/change any style/alias in the registry this registry will later serve as a master registry in the spazio workspace
