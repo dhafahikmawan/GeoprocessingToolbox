@@ -1,5 +1,13 @@
 import * as turf from '@turf/turf';
-import type { FeatureCollection, GeoJsonProperties, Feature, Geometry } from 'geojson';
+import type {
+    FeatureCollection,
+    GeoJsonProperties,
+    Feature,
+    Geometry,
+    LineString,
+    Polygon,
+    MultiPolygon,
+} from 'geojson';
 
 function normalizeProperties(value: Record<string, unknown> | null | undefined) {
     if (!value) return {};
@@ -16,6 +24,61 @@ function prefixProperties(
             value,
         ]),
     );
+}
+
+function getFeatureLines(feature: Feature<Geometry>): Feature<LineString>[] {
+    const geomType = feature.geometry.type;
+    if (geomType === "LineString") {
+        return [feature as Feature<LineString>];
+    }
+    if (geomType === "MultiLineString") {
+        return feature.geometry.coordinates.map(coordinates => turf.lineString(coordinates));
+    }
+    if (geomType === "Polygon" || geomType === "MultiPolygon") {
+        const lineResult = turf.polygonToLine(feature as Feature<Polygon | MultiPolygon>);
+        if (lineResult.type === "FeatureCollection") {
+            return lineResult.features as Feature<LineString>[];
+        }
+        return [lineResult as Feature<LineString>];
+    }
+    return [];
+}
+
+export function calculateFeatureDistance(
+    featureA: Feature<Geometry, GeoJsonProperties>,
+    featureB: Feature<Geometry, GeoJsonProperties>,
+): number {
+    if (turf.booleanIntersects(featureA, featureB)) {
+        return 0;
+    }
+
+    let minDistance = Infinity;
+    const pointsA = turf.explode(featureA).features;
+    const pointsB = turf.explode(featureB).features;
+    const linesA = getFeatureLines(featureA);
+    const linesB = getFeatureLines(featureB);
+
+    for (const pointA of pointsA) {
+        for (const lineB of linesB) {
+            minDistance = Math.min(minDistance, turf.pointToLineDistance(pointA, lineB));
+        }
+    }
+
+    for (const pointB of pointsB) {
+        for (const lineA of linesA) {
+            minDistance = Math.min(minDistance, turf.pointToLineDistance(pointB, lineA));
+        }
+    }
+
+    if (minDistance === Infinity) {
+        for (const pointA of pointsA) {
+            for (const pointB of pointsB) {
+                minDistance = Math.min(minDistance, turf.distance(pointA, pointB));
+            }
+        }
+    }
+
+    return minDistance;
 }
 
 
@@ -62,18 +125,22 @@ export function createSpatialJoinVector(input : FeatureCollection<Geometry, GeoJ
             }
 
             let minDistance = Infinity;
+            let minTieBreakDistance = Infinity;
             let closestOverlayFeature = overlay.features[0];
 
-            // Generate a representative point on the input feature to compute distances
             const ptInput = turf.pointOnFeature(featureInput);
 
             overlay.features.forEach(featureOverlay => {
-                // Generate a representative point on the overlay feature
+                const distance = calculateFeatureDistance(featureInput, featureOverlay);
                 const ptOverlay = turf.pointOnFeature(featureOverlay);
-                const distance = turf.distance(ptInput, ptOverlay);
-                
-                if (distance < minDistance) {
+                const tieBreakDistance = turf.distance(ptInput, ptOverlay);
+
+                if (
+                    distance < minDistance ||
+                    (distance === minDistance && tieBreakDistance < minTieBreakDistance)
+                ) {
                     minDistance = distance;
+                    minTieBreakDistance = tieBreakDistance;
                     closestOverlayFeature = featureOverlay;
                 }
             });
